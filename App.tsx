@@ -8,57 +8,55 @@ interface Tarefa {
   id: number;
   nome: string;
 }
-
 export default function App() {
 
   const [banco, setBanco] = useState<SQLite.SQLiteDatabase | null>(null);
+
   const [tarefa, setTarefa] = useState<string>('');
+
   const [listaTarefa, setListaTarefa] = useState<Tarefa[]>([]);
 
   useEffect(() => {
     async function iniciarBanco() {
-      const db = await SQLite.openDatabaseAsync('lostbank.db')
+      const db = await SQLite.openDatabaseAsync('meubanco.db');
 
       await db.execAsync(`
         CREATE TABLE IF NOT EXISTS tarefas(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT NOT NULL
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nome TEXT NOT NULL
         );
-        `)
+        `);
       setBanco(db);
       atualizarLista(db);
     }
     iniciarBanco()
   }, []);
-
   async function atualizarLista(db: SQLite.SQLiteDatabase) {
-    const resultado = await db.getAllAsync<Tarefa>
-      ('SELECT * FROM tarefas')
+    const resultado = await db.getAllAsync<Tarefa>('SELECT * FROM tarefas')
     setListaTarefa(resultado);
   }
-
   async function adicionarTarefa() {
     if (tarefa.trim() === '' || !banco) return;
-    await banco.runAsync('INSERT INTO tarefas(nome) VALUES(?)', [tarefa]);
+
+    await banco.runAsync('INSERT INTO tarefas (nome) VALUES(?)', [tarefa]);
     setTarefa('');
     atualizarLista(banco);
   }
-
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Gerenciador de tarefas!!</Text>
-      <view style={styles.inputContainer}>
+      <Text style={styles.titulo}> Gerenciador de Tarefas</Text>
+
+      <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="O que encontra-se a necessidade de ser fazido?"
+          placeholder="O que precisa ser feito?"
           value={tarefa}
           onChangeText={setTarefa}
         />
-        <TouchableOpacity style={styles.botao}
-          onPress={adicionarTarefa}
-        >
+        <TouchableOpacity style={styles.botao} onPress={adicionarTarefa}>
+          <Text style={styles.textoBotao}>Salvar</Text>
         </TouchableOpacity>
-      </view>
+      </View>
       <FlatList
         data={listaTarefa}
         keyExtractor={(item) => item.id.toString()}
